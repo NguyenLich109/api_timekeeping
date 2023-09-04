@@ -32,8 +32,10 @@ userRouter.post(
 // REGISTER
 userRouter.post(
     '/',
+    protect,
+    admin,
     asyncHandler(async (req, res) => {
-        const { name, key_login, phone } = req.body;
+        const { name, key_login, phone, sex, cmnd, address } = req.body;
 
         const userExists = await User.findOne({ key_login });
 
@@ -46,10 +48,44 @@ userRouter.post(
             name,
             key_login,
             phone,
+            sex,
+            cmnd,
+            address,
         });
 
         if (user) {
             res.status(201).json({ success: 'Thành công', text: 'Đăng ký tài khoản thành công' });
+        } else {
+            res.status(400);
+            throw new Error('Đăng ký tài khoản thất bại');
+        }
+    }),
+);
+
+userRouter.post(
+    '/:id/update',
+    protect,
+    admin,
+    asyncHandler(async (req, res) => {
+        const { name, key_login, phone, sex, cmnd, address } = req.body;
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(400);
+            throw new Error('Không tìm thấy tài khoản');
+        }
+        user.name = name;
+        user.key_login = key_login;
+        user.phone = phone;
+        user.sex = sex;
+        user.cmnd = cmnd;
+        user.address = address;
+
+        const save = await user.save();
+
+        if (save) {
+            res.status(201).json({ success: 'Thành công', text: 'Tài khoản đã cập nhật thành công' });
         } else {
             res.status(400);
             throw new Error('Đăng ký tài khoản thất bại');
@@ -63,6 +99,53 @@ userRouter.get(
     protect,
     asyncHandler(async (req, res) => {
         const user = await User.findById(req.user._id);
+
+        if (user) {
+            res.status(201).json({
+                _id: user._id,
+                name: user.name,
+                sex: user.sex,
+                key_login: user.key_login,
+                date: user.date,
+                phone: user.phone,
+                cmnd: user.cmnd,
+                isAdmin: user.isAdmin,
+                address: user.address,
+                image: user.image,
+                disable: user.disable,
+                createdAt: user.createdAt,
+            });
+        } else {
+            res.status(400);
+            throw new Error('Không tìm thấy tài khoản');
+        }
+    }),
+);
+
+userRouter.get(
+    '/all_users',
+    protect,
+    admin,
+    asyncHandler(async (req, res) => {
+        const pageSize = 25;
+        const page = Number(req.query.page) || 1;
+
+        const count = await User.countDocuments({});
+        let data = await User.find({})
+            .limit(pageSize)
+            .skip(pageSize * (page - 1))
+            .sort({ _id: -1 });
+
+        res.json({ data, page, pages: Math.ceil(count / pageSize) });
+    }),
+);
+
+userRouter.get(
+    '/detail',
+    protect,
+    admin,
+    asyncHandler(async (req, res) => {
+        const user = await User.findById(req.query.id);
 
         if (user) {
             res.status(201).json({

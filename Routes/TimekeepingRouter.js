@@ -51,7 +51,7 @@ TimekeepingRouter.get(
         const page = Number(req.query.pageNumber) || 1;
 
         const count = await Timekeeping.countDocuments({});
-        let data = await Timekeeping.find({})
+        const data = await Timekeeping.find({ user: req.user._id })
             .limit(pageSize)
             .skip(pageSize * (page - 1))
             .sort({ _id: -1 })
