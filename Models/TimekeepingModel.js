@@ -2,11 +2,22 @@ import mongoose from 'mongoose';
 
 const timekeepingSchema = mongoose.Schema(
     {
-        choose_shift: {
+        map: {
             type: String,
             required: true,
         },
-        note_title: {
+        startWorktime: {
+            type: String,
+            required: true,
+        },
+        worktime: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+        },
+        overtime: {
             type: String,
         },
         file: {
@@ -17,6 +28,11 @@ const timekeepingSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User',
+        },
+        is_done: {
+            type: Boolean,
+            required: true,
+            default: false,
         },
     },
     {
