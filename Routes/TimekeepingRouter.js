@@ -3,7 +3,6 @@ import asyncHandler from 'express-async-handler';
 import multer from 'multer';
 import { protect, admin } from '../Middleware/AuthMiddleware.js';
 import Timekeeping from '../Models/TimekeepingModel.js';
-import { UpdateFileCloudinary, UploadFileCloudinary } from '../utils/cloudinary.js';
 
 const TimekeepingRouter = express.Router();
 
@@ -15,11 +14,7 @@ TimekeepingRouter.post(
     protect,
     uploads.single('file'),
     asyncHandler(async (req, res) => {
-        const { map, startWorktime, worktime, description, overtime } = req.body;
-        const { idFile, urlFile } = await UploadFileCloudinary({
-            name_image: req.file.originalname,
-            path: req.file.path,
-        });
+        const { map, startWorktime, worktime, description, overtime, file } = req.body;
         if (!!urlFile) {
             const create = await Timekeeping.create({
                 map,
@@ -28,7 +23,7 @@ TimekeepingRouter.post(
                 overtime,
                 description,
                 user: req.user._id,
-                file: { idFile, urlFile },
+                file,
             });
             if (!!create) {
                 res.json(create);
@@ -46,22 +41,17 @@ TimekeepingRouter.post(
     uploads.single('file'),
     asyncHandler(async (req, res) => {
         const { id } = req.params;
-        const { id_url } = req.query;
+        const { file } = req.body;
         try {
-            const { idFile, urlFile } = await UpdateFileCloudinary({
-                name_image: req.file.originalname,
-                path: req.file.path,
-                idFile: id_url,
-            });
             await Timekeeping.updateOne(
                 { _id: id },
                 {
                     $set: {
-                        file: { idFile, urlFile },
+                        file,
                     },
                 },
             );
-            res.json({ idFile, urlFile });
+            res.json(file);
         } catch (error) {
             res.status(400);
             throw new Error('Cập nhật thất bại, vui lòng thử lại');
