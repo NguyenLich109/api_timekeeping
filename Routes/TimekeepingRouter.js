@@ -15,22 +15,20 @@ TimekeepingRouter.post(
     uploads.single('file'),
     asyncHandler(async (req, res) => {
         const { map, startWorktime, worktime, description, overtime, file } = req.body;
-        if (!!urlFile) {
-            const create = await Timekeeping.create({
-                map,
-                startWorktime,
-                worktime,
-                overtime,
-                description,
-                user: req.user._id,
-                file,
-            });
-            if (!!create) {
-                res.json(create);
-            } else {
-                res.status(400);
-                throw new Error('Chấm công thất bại, vui lòng thử lại');
-            }
+        const create = await Timekeeping.create({
+            map,
+            startWorktime,
+            worktime,
+            overtime,
+            description,
+            user: req.user._id,
+            file,
+        });
+        if (!!create) {
+            res.json(create);
+        } else {
+            res.status(400);
+            throw new Error('Chấm công thất bại, vui lòng thử lại');
         }
     }),
 );
